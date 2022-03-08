@@ -8,20 +8,37 @@ contract SolidityTest {
 
     // YOUR CODE HERE
     // ---
+    address owner;
+    uint accumulatedFees;
+    mapping (uint=>address) public nftToOwner;
+    uint nftsMinted;
 
     constructor() {
-        // YOUR CODE HERE
+        owner=msg.sender;
     }
 
-    function claim() external {
-        // YOUR CODE HERE
+    function claim() external{
+        require(msg.sender==owner);
+        uint total=accumulatedFees;
+        accumulatedFees=0;
+        (bool sent,) = payable(owner).call{value: total}("");
+        require(sent, "couldn't to send Ether");
     }
 
+    function _mint() internal{
+        nftsMinted+=1;
+        nftToOwner[nftsMinted]=msg.sender;
+    }
     function mint(uint256 amount) external payable {
-        // YOUR CODE HERE
+        require(msg.value>=PRICE*amount,"Insufficent Trancation fee");
+        require(amount>0 && amount<=5,"amount must be greater then 0 and less or equal to 5");
+        accumulatedFees+=msg.value;
+        for (uint _id=0;_id<amount;_id++){
+            _mint();
+        }
     }
 
     function ownerOf(uint256 tokenId) external view returns (address) {
-        // YOUR CODE HERE
+        return nftToOwner[tokenId];
     }
 }
