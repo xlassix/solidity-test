@@ -64,9 +64,19 @@ describe("SolidityTest", function () {
   it("Should successfully claim ethers", async function () {
     const mintFee: BigNumber = await base.PRICE();
     await base.connect(minter).mint(5, { value: mintFee.mul(5) });
-    await base.connect(owner).claim();
-    expect(await owner.getBalance()).to.be.gte(
-      BigNumber.from("10000495700000000000000")
+    const prevBalance: BigNumber = await owner.getBalance();
+    const contractBalance: BigNumber = await base.provider.getBalance(
+      base.address
+    );
+    const tx = await base.connect(owner).claim();
+    const receipt = await tx.wait();
+    const finalBalance: BigNumber = await owner.getBalance();
+    expect(ethers.utils.formatEther(finalBalance)).to.be.eq(
+      ethers.utils.formatEther(
+        prevBalance
+          .add(contractBalance)
+          .sub(receipt.effectiveGasPrice * receipt.gasUsed)
+      )
     );
   });
 
