@@ -1,0 +1,19 @@
+name: "Tests"
+on:
+  # not running on master as master will always be in "pending implementation" state
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Unit tests for contract
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - run: npm ci
+      - run: npm test
